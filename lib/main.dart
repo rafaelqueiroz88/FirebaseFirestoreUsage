@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -19,7 +20,17 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Chat',
-      home: const AuthView(),
+      // home: const AuthView(),
+      home: StreamBuilder(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (ctx, userSnapshot) {
+          if (userSnapshot.hasData) {
+            return const ChatView();
+          }
+
+          return const AuthView();
+        },
+      ),
       theme: ThemeData(
         scaffoldBackgroundColor: Colors.yellow,
         primarySwatch: Colors.grey,
