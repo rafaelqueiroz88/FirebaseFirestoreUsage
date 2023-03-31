@@ -39,13 +39,12 @@ class _AuthViewState extends State<AuthView> {
         await FirebaseFirestore.instance
             .collection('users')
             .doc(userCredential.user!.uid)
-            .set({
-          'username': username,
-          'email': email,
-        });
-        // basicamente precisa usar aqui mas como uma ação deve ser disparada na sequência,
-        // não faz sentido mudar esse status
-        // setState(() => _isLoading = false);
+            .set(
+          {
+            'username': username,
+            'email': email,
+          },
+        );
       }
     } on FirebaseAuthException catch (err) {
       String message = 'An error occurred. Check your credentials';

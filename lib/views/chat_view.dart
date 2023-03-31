@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 
+import '../widgets/chat/messages.dart';
+import '../widgets/chat/new_message.dart';
+
 class ChatView extends StatelessWidget {
   const ChatView({super.key});
 
@@ -44,55 +47,18 @@ class ChatView extends StatelessWidget {
           ),
         ],
       ),
-      body: StreamBuilder(
-        stream: FirebaseFirestore.instance
-            .collection('chats/17mx4ijxbl0RMAhzEoDt/messages')
-            .snapshots(),
-        builder: (ctx, streamSnapshot) {
-          if (streamSnapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          final documents = streamSnapshot.data!.docs;
-          return ListView.builder(
-            itemBuilder: (ctx, index) => Container(
-              height: 50,
-              decoration: const BoxDecoration(
-                color: Colors.transparent,
-              ),
-              child: Card(
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(18),
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                    top: 10.0,
-                    left: 15,
-                  ),
-                  child: Text(
-                    documents[index]['text'],
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 17,
-                    ),
-                  ),
-                ),
-              ),
+      body: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white70,
+        ),
+        child: Column(
+          children: const [
+            Expanded(
+              child: Messages(),
             ),
-            itemCount: documents.length,
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.add),
-        onPressed: () {
-          FirebaseFirestore.instance
-              .collection('chats/17mx4ijxbl0RMAhzEoDt/messages')
-              .add({
-            'text': 'Vem sempre aqui? :D',
-          });
-        },
+            NewMessage(),
+          ],
+        ),
       ),
     );
   }

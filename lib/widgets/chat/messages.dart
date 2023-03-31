@@ -1,25 +1,61 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+import './message_bubble.dart';
 
 class Messages extends StatelessWidget {
   const Messages({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final userId = FirebaseAuth.instance.currentUser!.uid;
+
+    bool isAuthor(String receivedId) {
+      if (receivedId == userId) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+
     return StreamBuilder(
-      stream: FirebaseFirestore.instance.collection('chat').snapshots(),
+      stream: FirebaseFirestore.instance
+          .collection('chat')
+          .orderBy(
+            'createdAt',
+            descending: true,
+          )
+          .snapshots(),
       builder: (ctx, messageSnapshot) {
-        if (messageSnapshot.connectionState == ConnectionState.waiting) {
+        if (messageSnapshot.connectionState == ConnectionState.waiting ||
+            messageSnapshot.data == null) {
           return const Center(
-            child: CircularProgressIndicator(),
+            child: CircularProgressIndicator(
+              color: Colors.white,
+            ),
           );
         }
-
-        final chatDocs = messageSnapshot.data!.docs;
+        final documents = messageSnapshot.data!.docs;
 
         return ListView.builder(
-          itemCount: chatDocs.length,
-          itemBuilder: (ctx, index) => Text(chatDocs[index]['text']),
+          reverse: true,
+          itemCount: documents.length,
+          itemBuilder: (ctx, index) => Container(
+            height: 50,
+            decoration: const BoxDecoration(
+              color: Colors.transparent,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 13),
+              child: MessageBubble(
+                documents[index]['text'],
+                isAuthor(documents[index]['userId']),
+                documents[index]['createdAt'].seconds,
+                key: ValueKey(documents[index].id),
+              ),
+            ),
+          ),
         );
       },
     );
