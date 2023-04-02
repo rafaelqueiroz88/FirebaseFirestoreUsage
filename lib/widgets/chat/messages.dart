@@ -42,16 +42,16 @@ class Messages extends StatelessWidget {
           reverse: true,
           itemCount: documents.length,
           itemBuilder: (ctx, index) => Container(
-            height: 50,
             decoration: const BoxDecoration(
               color: Colors.transparent,
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 13),
+              padding: const EdgeInsets.symmetric(horizontal: 5),
               child: MessageBubble(
                 documents[index]['text'],
                 isAuthor(documents[index]['userId']),
                 documents[index]['createdAt'].seconds,
+                documents[index]['userAvatarPath'],
                 key: ValueKey(documents[index].id),
               ),
             ),

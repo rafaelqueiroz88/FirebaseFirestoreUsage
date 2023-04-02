@@ -1,8 +1,17 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 
+import 'package:firebase_resources/widgets/pickers/user_image_picker.dart';
+
 class AuthFormWidget extends StatefulWidget {
-  final void Function(String email, String password, String username,
-      bool isLogin, BuildContext ctx) submitForm;
+  final void Function(
+    String email,
+    String password,
+    String username,
+    File image,
+    bool isLogin,
+    BuildContext ctx,
+  ) submitForm;
   final bool isLoading;
 
   const AuthFormWidget(this.submitForm, this.isLoading, {super.key});
@@ -17,15 +26,35 @@ class _AuthFormWidgetState extends State<AuthFormWidget> {
   String _userEmail = '';
   String _username = '';
   String _userPassword = '';
+  File? _userImageFile;
+
+  void _pickedImage(File image) {
+    _userImageFile = image;
+  }
 
   void _trySubmit(BuildContext ctx) {
     final isValid = _formKey.currentState!.validate();
     FocusScope.of(context).unfocus();
 
+    if (_userImageFile == null && !_isLogin) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select an Image to Proceed'),
+        ),
+      );
+      return;
+    }
+
     if (isValid) {
       _formKey.currentState!.save();
-      widget.submitForm(_userEmail.trim(), _userPassword.trim(),
-          _username.trim(), _isLogin, ctx);
+      widget.submitForm(
+        _userEmail.trim(),
+        _userPassword.trim(),
+        _username.trim(),
+        _userImageFile!,
+        _isLogin,
+        ctx,
+      );
     }
   }
 
@@ -96,6 +125,8 @@ class _AuthFormWidgetState extends State<AuthFormWidget> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  if (!_isLogin) UserImagePicker(_pickedImage),
+                  buildSizedHeightBox(10),
                   const Text(
                     'Identify Yourself',
                     style: TextStyle(
@@ -123,9 +154,11 @@ class _AuthFormWidgetState extends State<AuthFormWidget> {
                       onPressed: () {
                         setState(() => _isLogin = !_isLogin);
                       },
-                      child: Text(_isLogin
-                          ? 'Not registered? Touch to Signup'
-                          : 'Already have an account? Touch to Login'),
+                      child: Text(
+                        _isLogin
+                            ? 'Not registered? Touch to Signup'
+                            : 'Already have an account? Touch to Login',
+                      ),
                     ),
                 ],
               ),

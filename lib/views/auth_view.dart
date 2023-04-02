@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/services.dart';
 
 import '../widgets/auth_form.dart';
@@ -19,8 +21,14 @@ class _AuthViewState extends State<AuthView> {
   final _auth = FirebaseAuth.instance;
   bool _isLoading = false;
 
-  void _submitAuthForm(String email, String password, String username,
-      bool isLogin, BuildContext ctx) async {
+  void _submitAuthForm(
+    String email,
+    String password,
+    String username,
+    File image,
+    bool isLogin,
+    BuildContext ctx,
+  ) async {
     UserCredential userCredential;
 
     setState(() => _isLoading = true);
@@ -36,6 +44,16 @@ class _AuthViewState extends State<AuthView> {
           email: email,
           password: password,
         );
+
+        final ref = FirebaseStorage.instance
+            .ref()
+            .child('user_images')
+            .child('${userCredential.user!.uid}.jpg');
+
+        UploadTask uploadTask = ref.putFile(image);
+        final snapshot = await uploadTask.whenComplete(() => {});
+        final urlDownload = await snapshot.ref.getDownloadURL();
+
         await FirebaseFirestore.instance
             .collection('users')
             .doc(userCredential.user!.uid)
@@ -43,6 +61,7 @@ class _AuthViewState extends State<AuthView> {
           {
             'username': username,
             'email': email,
+            'userAvatarPath': urlDownload,
           },
         );
       }
